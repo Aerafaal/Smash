@@ -75,4 +75,19 @@ public interface ISessionCollection<TSession>
 	/// <param name="predicate">The predicate that determines whether the session is found.</param>
 	/// <returns>The number of sessions with the specified <paramref name="predicate"/>.</returns>
 	int CountSessions(Func<TSession, bool> predicate);
+	
+	/// <summary>Executes asynchronously the specified <paramref name="action"/> on each session in the collection.</summary>
+	/// <param name="action">The action to execute.</param>
+	/// <param name="predicate">The predicate that determines whether the session is found.</param>
+	Task ExecuteAsync(Action<TSession> action, Func<TSession, bool>? predicate = null);
+	
+	/// <summary>Executes asynchronously the specified <paramref name="action"/> on each session in the collection.</summary>
+	/// <param name="action">The action to execute.</param>
+	/// <param name="predicate">The predicate that determines whether the session is found.</param>
+	Task ExecuteAsync(Func<TSession, ValueTask> action, Func<TSession, bool>? predicate = null);
+	
+	/// <summary>Executes asynchronously the specified <paramref name="action"/> on each session in the collection.</summary>
+	/// <param name="action">The action to execute.</param>
+	/// <param name="predicate">The predicate that determines whether the session is found.</param>
+	Task ExecuteAsync(Func<TSession, Task> action, Func<TSession, bool>? predicate = null);
 }

@@ -100,4 +100,34 @@ public class SessionCollection<TSession, TMessage> : ISessionCollection<TSession
 	/// <inheritdoc />
 	public int CountSessions(Func<TSession, bool> predicate) =>
 		Sessions.Values.Count(predicate);
+
+	/// <inheritdoc />
+	public Task ExecuteAsync(Action<TSession> action, Func<TSession, bool>? predicate = null)
+	{
+		var sessions = predicate is null 
+			? Sessions.Values 
+			: Sessions.Values.Where(predicate);
+
+		return Task.WhenAll(sessions.Select(session => Task.Run(() => action(session))));
+	}
+
+	/// <inheritdoc />
+	public Task ExecuteAsync(Func<TSession, ValueTask> action, Func<TSession, bool>? predicate = null)
+	{
+		var sessions = predicate is null 
+			? Sessions.Values 
+			: Sessions.Values.Where(predicate);
+		
+		return Task.WhenAll(sessions.Select(session => action(session).AsTask()));
+	}
+
+	/// <inheritdoc />
+	public Task ExecuteAsync(Func<TSession, Task> action, Func<TSession, bool>? predicate = null)
+	{
+		var sessions = predicate is null 
+			? Sessions.Values 
+			: Sessions.Values.Where(predicate);
+		
+		return Task.WhenAll(sessions.Select(action));
+	}
 }
