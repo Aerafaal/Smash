@@ -84,12 +84,13 @@ public abstract class SmashServer<TSession, TMessage>
 			
 			var session = CreateSession(sessionSocket, messageParser, _messageDispatcher, logger, _options);
 
-			if (CanAddSession(session))
+			if (!CanAddSession(session))
 			{
-				session.Disconnect();
 				await session.DisposeAsync().ConfigureAwait(false);
 				continue;
 			}
+			
+			Sessions.AddSession(session);
 
 			_ = OnSessionConnectedAsync(session)
 				.ContinueWith(_ => OnSessionConnectedAsync(session), _cts.Token)
@@ -100,6 +101,7 @@ public abstract class SmashServer<TSession, TMessage>
 				.Unwrap()
 				.ContinueWith(_ => session.DisposeAsync().AsTask(), _cts.Token)
 				.Unwrap()
+				.ContinueWith(_ => Sessions.RemoveSession(session.SessionId), _cts.Token)
 				.ConfigureAwait(false);
 		}
 	}
