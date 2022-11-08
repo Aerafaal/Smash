@@ -5,8 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Authors>Aerafaal</Authors>
-        <Version>1.0.0</Version>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <Version>1.2.0</Version>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
         <Copyright>@Copyright 2022 Aerafaal</Copyright>
         <RepositoryUrl>https://github.com/Aerafaal/Smash</RepositoryUrl>
         <PackageProjectUrl>https://github.com/Aerafaal/Smash</PackageProjectUrl>
@@ -28,15 +28,6 @@
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
       <PackageReference Include="System.IO.Pipelines" Version="7.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="..\..\Smash.jpg">
-            <Pack>True</Pack>
-        </None>
-        <None Include="..\..\LICENSE">
-            <Pack>True</Pack>
-        </None>
     </ItemGroup>
     
 </Project>
