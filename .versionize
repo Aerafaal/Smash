@@ -1,0 +1,38 @@
+{
+  "changelogAll": true,
+  "changelog": {
+    "header": "## Nemesis changelog",
+    "sections": [
+      {
+        "type": "feat",
+        "section": "✨ Features",
+        "hidden": false
+      },
+      {
+        "type": "fix",
+        "section": "🐛 Bug Fixes",
+        "hidden": false
+      },
+      {
+        "type": "perf",
+        "section": "🚀 Performance",
+        "hidden": false
+      },
+      {
+        "type": "doc",
+        "section": "📝 Documentation",
+        "hidden": false
+      },
+      {
+        "type": "style",
+        "section": "💫 Code Styles",
+        "hidden": false
+      },
+      {
+        "type": "remove",
+        "section": "💥 Removed Files",
+        "hidden": false
+      }
+    ]
+  }
+}
