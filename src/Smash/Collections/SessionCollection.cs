@@ -34,6 +34,10 @@ public class SessionCollection<TSession, TMessage> : ISessionCollection<TSession
 	}
 
 	/// <inheritdoc />
+	public void AddSession(TSession session) =>
+		Sessions.TryAdd(session.SessionId, session);
+
+	/// <inheritdoc />
 	public TSession? GetSession(string sessionId) =>
 		Sessions.TryGetValue(sessionId, out var session) 
 			? session 

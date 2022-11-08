@@ -14,6 +14,10 @@ public interface ISessionCollection<TSession>
 	
 	/// <summary>Determines whether the collection is full.</summary>
 	bool IsFull { get; }
+
+	/// <summary>Adds a session to the collection.</summary>
+	/// <param name="session">The session to add.</param>
+	void AddSession(TSession session);
 	
 	/// <summary>Gets a session with the specified <paramref name="sessionId"/>.</summary>
 	/// <param name="sessionId">The unique identifier of the session.</param>
