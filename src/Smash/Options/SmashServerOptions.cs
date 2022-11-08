@@ -20,6 +20,12 @@ public class SmashServerOptions
 	/// <summary>Determines whether the server log messages.</summary>
 	public bool EnableLogging { get; set; }
 	
+	/// <summary>Determines whether the server use the keep alive feature.</summary>
+	public bool EnableKeepAlive { get; set; }
+	
+	/// <summary>Gets the keep alive interval.</summary>
+	public int KeepAliveInterval { get; set; }
+	
 	internal IPEndPoint GetRemoteEndPoint() =>
 		new(IPAddress.Parse(IpAddress), Port);
 }

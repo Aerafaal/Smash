@@ -23,6 +23,7 @@ public abstract class SmashServer<TSession, TMessage>
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly IServiceProvider _provider;
 	private readonly ILogger _logger;
+	private readonly PeriodicTimer _timer;
 
 	/// <summary>Gets the session collection of type <typeparamref name="TSession"/>.</summary>
 	public ISessionCollection<TSession> Sessions { get; }
@@ -47,7 +48,7 @@ public abstract class SmashServer<TSession, TMessage>
 		_loggerFactory = loggerFactory;
 		_provider = provider;
 		_logger = loggerFactory.CreateLogger("Smash.Transport.SmashServer");
-
+		_timer = new PeriodicTimer(TimeSpan.FromMilliseconds(_options.KeepAliveInterval));
 		Sessions = sessions;
 	}
 
@@ -70,6 +71,9 @@ public abstract class SmashServer<TSession, TMessage>
 		
 		_logger.LogInformation("Listening on {EndPoint}", endpoint);
 
+		if (_options.EnableKeepAlive)
+			_ = PingAsync();
+
 		while (!_cts.IsCancellationRequested)
 		{
 			var sessionSocket = await _socket.AcceptAsync(_cts.Token).ConfigureAwait(false);
@@ -86,8 +90,6 @@ public abstract class SmashServer<TSession, TMessage>
 				await session.DisposeAsync().ConfigureAwait(false);
 				continue;
 			}
-			
-			_logger.LogInformation("Session ({Name}) connected from {EndPoint}", session, session.RemoteEndPoint);
 
 			_ = OnSessionConnectedAsync(session)
 				.ContinueWith(_ => OnSessionConnectedAsync(session), _cts.Token)
@@ -114,6 +116,17 @@ public abstract class SmashServer<TSession, TMessage>
 		IMessageDispatcher<TMessage> messageDispatcher,
 		ILogger logger,
 		SmashServerOptions options);
+	
+	private async Task PingAsync()
+	{
+		while (await _timer.WaitForNextTickAsync(_cts.Token).ConfigureAwait(false))
+		{
+			if (_cts.IsCancellationRequested)
+				return;
+
+			await Sessions.ExecuteAsync(x => x.DisposeAsync(), x => !x.IsConnected).ConfigureAwait(false);
+		}
+	}
 
 	/// <summary>Determines whether the session can be added to the session collection.</summary>
 	/// <param name="session">The session to add.</param>
@@ -121,14 +134,20 @@ public abstract class SmashServer<TSession, TMessage>
 	protected virtual bool CanAddSession(TSession session) =>
 		!Sessions.IsFull && 
 		Sessions.CountSessions(x => x.RemoteEndPoint.Address.ToString().Equals(session.RemoteEndPoint.Address.ToString(), StringComparison.InvariantCultureIgnoreCase)) < _options.MaxConnectionsByIpAddress;
-	
+
 	/// <summary>Called when a session is connected.</summary>
 	/// <param name="session">The connected session.</param>
-	protected virtual Task OnSessionConnectedAsync(TSession session) =>
-		Task.CompletedTask;
-	
+	protected virtual Task OnSessionConnectedAsync(TSession session)
+	{
+		_logger.LogInformation("Session ({Name}) connected from {EndPoint}", session, session.RemoteEndPoint);
+		return Task.CompletedTask;
+	}
+
 	/// <summary>Called when a session is disconnected.</summary>
 	/// <param name="session">The session will be disconnected.</param>
-	protected virtual Task OnSessionDisconnectedAsync(TSession session) =>
-		Task.CompletedTask;
+	protected virtual Task OnSessionDisconnectedAsync(TSession session)
+	{
+		_logger.LogInformation("Session ({Name}) disconnected from {EndPoint}", session, session.RemoteEndPoint);
+		return Task.CompletedTask;
+	}
 }
