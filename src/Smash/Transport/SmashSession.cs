@@ -67,7 +67,7 @@ public abstract class SmashSession<TMessage> : IAsyncDisposable
 		_options = options;
 	}
 
-	protected internal virtual async Task ReceiveAsync()
+	internal async Task ReceiveAsync()
 	{
 		try
 		{
@@ -187,4 +187,8 @@ public abstract class SmashSession<TMessage> : IAsyncDisposable
 		
 		GC.SuppressFinalize(this);
 	}
+	
+	/// <inheritdoc />
+	public override string ToString() =>
+		$"({RemoteEndPoint})";
 }

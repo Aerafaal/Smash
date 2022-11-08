@@ -55,7 +55,8 @@ public abstract class SmashClient<TMessage> : IAsyncDisposable
 		_options = options.Value;
 	}
 
-	public virtual async Task ConnectAsync()
+	/// <summary>Connects the session to the specified endpoint.</summary>
+	public async Task ConnectAsync()
 	{
 		try
 		{
@@ -65,13 +66,11 @@ public abstract class SmashClient<TMessage> : IAsyncDisposable
 		{
 			_logger.LogError("Failed to connect to server: {Message}", e.Message);
 		}
-		
-		_logger.LogInformation("Connected to server: {RemoteEndPoint}", RemoteEndPoint);
 
-		await ReceiveAsync().ConfigureAwait(false);
+		_ = ReceiveAsync().ConfigureAwait(false);
 	}
 
-	protected virtual async Task ReceiveAsync()
+	private async Task ReceiveAsync()
 	{
 		await OnConnectedAsync().ConfigureAwait(false);
 
@@ -198,9 +197,27 @@ public abstract class SmashClient<TMessage> : IAsyncDisposable
 		GC.SuppressFinalize(this);
 	}
 
-	protected abstract ValueTask OnConnectedAsync();
-	
-	protected abstract ValueTask OnDisconnectedAsync();
+	/// <inheritdoc />
+	public override string ToString() =>
+		$"({RemoteEndPoint})";
 
-	protected abstract ValueTask<DispatchResults> OnReceiveMessageAsync(TMessage message);
+	/// <summary>Called when the session is connected to the remote endpoint.</summary>
+	protected virtual ValueTask OnConnectedAsync()
+	{
+		_logger.LogInformation("Client ({Name}) connected to server: {RemoteEndPoint}", ToString(), RemoteEndPoint);
+		return ValueTask.CompletedTask;
+	}
+
+	/// <summary>Called when the session is disconnected to the remote endpoint.</summary>
+	protected virtual ValueTask OnDisconnectedAsync()
+	{
+		_logger.LogInformation("Client ({Name}) disconnected from server: {RemoteEndPoint}", ToString(), RemoteEndPoint);
+		return ValueTask.CompletedTask;
+	}
+
+	/// <summary>Called when the session receives a message from the remote endpoint.</summary>
+	/// <param name="message">The received message.</param>
+	/// <returns>The dispatching state.</returns>
+	protected virtual ValueTask<DispatchResults> OnReceiveMessageAsync(TMessage message) =>
+		ValueTask.FromResult(DispatchResults.Failed);
 }
