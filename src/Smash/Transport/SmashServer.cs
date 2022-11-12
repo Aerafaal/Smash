@@ -72,7 +72,7 @@ public abstract class SmashServer<TSession, TMessage>
 		_logger.LogInformation("Listening on {EndPoint}", endpoint);
 
 		if (_options.EnableKeepAlive)
-			_ = PingAsync();
+			_ = KeepAliveAsync();
 
 		while (!_cts.IsCancellationRequested)
 		{
@@ -119,14 +119,18 @@ public abstract class SmashServer<TSession, TMessage>
 		ILogger logger,
 		SmashServerOptions options);
 	
-	private async Task PingAsync()
+	private async Task KeepAliveAsync()
 	{
 		while (await _timer.WaitForNextTickAsync(_cts.Token).ConfigureAwait(false))
 		{
 			if (_cts.IsCancellationRequested)
 				return;
 
-			await Sessions.ExecuteAsync(x => x.DisposeAsync(), x => !x.IsConnected).ConfigureAwait(false);
+			await Sessions.ExecuteAsync(x =>
+			{
+				Sessions.RemoveSession(x.SessionId);
+				return x.DisposeAsync();
+			}, x => !x.IsConnected).ConfigureAwait(false);
 		}
 	}
 
